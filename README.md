@@ -63,6 +63,11 @@ MONGODB_URI=mongodb://localhost:27017/civicmind
 GEMINI_API_KEY=your_google_gemini_api_key
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
+
+# Cloudinary (Required for Image Uploads)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 ---
@@ -152,7 +157,7 @@ gcloud run deploy civicmind-backend \
     --platform managed \
     --region $REGION \
     --allow-unauthenticated \
-    --set-env-vars="GEMINI_API_KEY=your_gemini_api_key,MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname,NODE_ENV=production"
+    --set-env-vars="GEMINI_API_KEY=your_gemini_api_key,MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/dbname,NODE_ENV=production,CLOUDINARY_CLOUD_NAME=your_cloud_name,CLOUDINARY_API_KEY=your_api_key,CLOUDINARY_API_SECRET=your_api_secret"
 ```
 
 Save the generated **Service URL** of the backend service (e.g., `https://civicmind-backend-xxxxxx.run.app`).
