@@ -24,6 +24,35 @@ const uploadToCloudinary = async (localFilePath) => {
   }
 };
 
+/**
+ * Uploads a buffer directly to Cloudinary and returns the secure URL
+ * @param {Buffer} fileBuffer - Image buffer
+ * @returns {Promise<string>} - Cloudinary secure URL
+ */
+const uploadBufferToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: 'civicsprint' },
+      (error, result) => {
+        if (error) {
+          console.error('Cloudinary buffer upload error:', error);
+          reject(error);
+        } else {
+          resolve(result.secure_url);
+        }
+      }
+    );
+
+    const { Readable } = require('stream');
+    const readable = new Readable();
+    readable._read = () => {};
+    readable.push(fileBuffer);
+    readable.push(null);
+    readable.pipe(uploadStream);
+  });
+};
+
 module.exports = {
   uploadToCloudinary,
+  uploadBufferToCloudinary,
 };

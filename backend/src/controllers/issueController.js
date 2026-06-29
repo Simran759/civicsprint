@@ -12,7 +12,7 @@ const { useGeminiVision } = require('../utils/aiConfig');
 const AuditLog = require('../models/AuditLog');
 const RuleEngine = require('../services/ruleEngine');
 const SystemEvent = require('../models/SystemEvent');
-const { uploadToCloudinary } = require('../utils/cloudinary');
+const { uploadToCloudinary, uploadBufferToCloudinary } = require('../utils/cloudinary');
 function canAccessDepartment(user, issueDepartment) {
   if (!user || (user.role !== 'supervisor' && user.role !== 'manager')) {
     return true;
@@ -107,11 +107,10 @@ const shouldUseCloudinaryUpload = () => {
 exports.createIssue = async (req, res, next) => {
   let tempFilePath = null;
   try {
-    if (!req.file) {
+    if (!req.file || !req.file.buffer) {
       return res.status(400).json({ success: false, error: 'Report image is required.' });
     }
 
-    tempFilePath = req.file.path;
     const { description, latitude, longitude, citizenEmail } = req.body;
 
     if (!description || !latitude || !longitude || !citizenEmail) {
@@ -124,12 +123,13 @@ exports.createIssue = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'Invalid latitude or longitude coordinates.' });
     }
 
-    const relativeImageUrl = req.file.path;
+    // Upload image directly to Cloudinary from memory
+    const relativeImageUrl = await uploadBufferToCloudinary(req.file.buffer);
     const coordinates = [lng, lat];
 
     // 1. Run Gemini Vision Agent to analyze the image and description (Agent 1)
     console.log('Invoking Agent 1: Gemini Vision Infrastructure Analyzer...');
-    const analysis = await analyzeIssue(tempFilePath, req.file.mimetype, description);
+    const analysis = await analyzeIssue(relativeImageUrl, req.file.mimetype, description);
     analysis.department = normalizeDepartment(analysis.department, analysis.category);
 
     // 2. Duplicate Detection
@@ -155,7 +155,7 @@ exports.createIssue = async (req, res, next) => {
     const assignedWorker = await RuleEngine.assignWorker(analysis.department);
     
     // Fraud Check
-    const fraudAnalysis = await detectImageFraud(tempFilePath, req.file.mimetype, description);
+    const fraudAnalysis = await detectImageFraud(relativeImageUrl, req.file.mimetype, description);
     const isFraudFlagged = fraudAnalysis.isAuthentic === false;
     const initialStatus = isFraudFlagged ? 'Pending Review' : (assignedWorker === 'Unassigned' ? 'Backlog' : 'Assigned');
 
@@ -483,16 +483,16 @@ exports.updateIssueStatus = async (req, res, next) => {
     }
 
     if (nextStatus === 'Inspection') {
-      if (!req.file) {
+      if (!req.file || !req.file.buffer) {
         return res.status(400).json({ success: false, error: 'An After progress/completion photo is required to request inspection.' });
       }
 
-      issue.afterImageUrl = req.file.path;
+      issue.afterImageUrl = await uploadBufferToCloudinary(req.file.buffer);
 
       const beforeImagePath = issue.imageUrl.startsWith('http') 
         ? issue.imageUrl 
         : path.join(__dirname, '../../', issue.imageUrl.replace(/^\/+/, ''));
-      const afterImagePath = req.file.path;
+      const afterImagePath = issue.afterImageUrl;
 
       console.log('Invoking Agent 5: Repair Validation Agent...');
       const validationResult = await runRepairValidationAgent(beforeImagePath, afterImagePath, issue.category, issue.description);
