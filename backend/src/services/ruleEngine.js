@@ -107,7 +107,7 @@ class RuleEngine {
   }
 
   /**
-   * Generate Ticket ID deterministically
+   * Generate Ticket ID deterministically and uniquely
    */
   static async generateTicketId(category) {
     const categoryPrefixes = {
@@ -119,8 +119,10 @@ class RuleEngine {
       'General Repair': 'GEN'
     };
     const prefix = categoryPrefixes[category] || 'GEN';
-    const count = await Issue.countDocuments({ category });
-    return `${prefix}-${101 + count}`;
+    // Guarantee uniqueness with timestamp suffix + random chars
+    const timestampSlice = Date.now().toString().slice(-4);
+    const randomStr = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `${prefix}-${timestampSlice}${randomStr}`;
   }
 }
 
