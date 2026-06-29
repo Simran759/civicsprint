@@ -20,10 +20,9 @@ app.use(
 );
 
 // 2. CORS configuration
-const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
 app.use(
   cors({
-    origin: allowedOrigin,
+    origin: true, // Dynamically allow any origin (perfect for Vercel/Render deployments)
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   })
