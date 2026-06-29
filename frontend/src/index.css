@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased;
+    background:
+      radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 28%),
+      radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.16), transparent 26%),
+      linear-gradient(135deg, #020617 0%, #0f172a 45%, #111827 100%);
+    color: #e2e8f0;
+    min-height: 100vh;
+    transition: background 0.3s ease;
+  }
+
+  ::selection {
+    @apply bg-blue-500/30 text-white;
+  }
+}
+
+/* Custom scrollbar for premium aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
+}
+
+/* Glassmorphism custom classes - mapped to clean White SaaS layouts */
+.glass-panel {
+  @apply bg-slate-950/85 border border-slate-800 shadow-2xl backdrop-blur-2xl text-slate-100;
+}
+
+.glass-card {
+  @apply bg-slate-950/90 border border-slate-800 hover:border-brand-500 shadow-2xl transition-all duration-300;
+}
+
+/* Map marker popups adjustments */
+.leaflet-popup-content-wrapper {
+  @apply !bg-white !text-slate-800 !border !border-slate-200 !rounded-2xl !shadow-xl;
+}
+
+.leaflet-popup-tip {
+  @apply !bg-white !border-l !border-b !border-slate-200;
+}
+
+.leaflet-container {
+  @apply font-sans;
+}
+
+.leaflet-control-zoom {
+  @apply !border-none !shadow-sm;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  @apply !bg-white !text-slate-600 hover:!bg-slate-50 hover:!text-black !border-slate-200 !transition-colors;
+}
